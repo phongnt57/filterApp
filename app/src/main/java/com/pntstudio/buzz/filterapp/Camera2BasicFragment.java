@@ -51,6 +51,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.util.Size;
+import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -58,6 +59,8 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import com.pntstudio.buzz.filterapp.filter.CameraFilter;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -72,7 +75,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public class Camera2BasicFragment extends Fragment
-        implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback {
+        implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback,
+Runnable{
 
     /**
      * Conversion from screen rotation to JPEG orientation.
@@ -127,6 +131,21 @@ public class Camera2BasicFragment extends Fragment
      * Max preview height that is guaranteed by Camera2 API
      */
     private static final int MAX_PREVIEW_HEIGHT = 1080;
+    //filter camera
+    private Thread renderThread;
+    private CameraFilter selectedFilter;
+    private int selectedFilterId = R.id.filter0;
+    private SparseArray<CameraFilter> cameraFilterMap = new SparseArray<>();
+    private SurfaceTexture surfaceTexture;
+    private int gwidth, gheight;
+
+
+
+
+
+
+
+
 
     /**
      * {@link TextureView.SurfaceTextureListener} handles several lifecycle events on a
@@ -137,16 +156,32 @@ public class Camera2BasicFragment extends Fragment
 
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture texture, int width, int height) {
+            if (renderThread != null && renderThread.isAlive()) {
+                renderThread.interrupt();
+            }
+            renderThread = new Thread(Camera2BasicFragment.this);
+
+            surfaceTexture = texture;
+            gwidth = -width;
+            gheight = -height;
             openCamera(width, height);
+            // Start rendering
+            renderThread.start();
         }
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture texture, int width, int height) {
+            gwidth = -width;
+            gheight = -height;
             configureTransform(width, height);
         }
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture texture) {
+            if (renderThread != null && renderThread.isAlive()) {
+                renderThread.interrupt();
+            }
+            CameraFilter.release();
             return true;
         }
 
@@ -909,6 +944,12 @@ public class Camera2BasicFragment extends Fragment
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
                     CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
         }
+    }
+
+    @Override
+    public void run() {
+
+
     }
 
     /**

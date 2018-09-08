@@ -17,18 +17,53 @@ package com.pntstudio.buzz.filterapp;/*
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
+    private int filterId = R.id.filter0;
+    Camera2BasicFragment camera2BasicFragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        camera2BasicFragment = Camera2BasicFragment.newInstance();
         if (null == savedInstanceState) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, Camera2BasicFragment.newInstance())
+                    .replace(R.id.container, camera2BasicFragment)
                     .commit();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.filter, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        filterId = item.getItemId();
+
+        // TODO: need tidy up
+        if (filterId == R.id.capture) {
+            camera2BasicFragment.switchCamera();
+//            Toast.makeText(this,
+//                    capture() ? "The capture has been saved to your sdcard root path." :
+//                            "Save failed!",
+//                    Toast.LENGTH_SHORT).show();
+            return true;
+        }
+
+        setTitle(item.getTitle());
+
+        if (camera2BasicFragment != null)
+            camera2BasicFragment.setSelectedFilter(filterId);
+
+        return true;
     }
 
 }

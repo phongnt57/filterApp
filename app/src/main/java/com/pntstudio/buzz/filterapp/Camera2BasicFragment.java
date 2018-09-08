@@ -22,6 +22,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
@@ -41,6 +42,8 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.opengl.GLES11Ext;
+import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -60,7 +63,30 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.pntstudio.buzz.filterapp.filter.CameraFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.AsciiArtFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.BasicDeformFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.BlueorangeFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.CameraFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.ChromaticAberrationFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.ContrastFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.CrackedFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.CrosshatchFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.EMInterferenceFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.EdgeDetectionFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.JFAVoronoiFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.LegofiedFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.LichtensteinEsqueFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.MappingFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.MoneyFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.MyGLUtils;
+import com.pntstudio.buzz.filterapp.filter_opengl.NoiseWarpFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.OriginalFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.PixelizeFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.PolygonizationFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.RefractionFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.TileMosaicFilter;
+import com.pntstudio.buzz.filterapp.filter_opengl.TrianglesMosaicFilter;
+import com.pntstudio.buzz.filterapp.utils.FileUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -74,9 +100,15 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import javax.microedition.khronos.egl.EGL10;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLContext;
+import javax.microedition.khronos.egl.EGLDisplay;
+import javax.microedition.khronos.egl.EGLSurface;
+
 public class Camera2BasicFragment extends Fragment
         implements View.OnClickListener, ActivityCompat.OnRequestPermissionsResultCallback,
-Runnable{
+         Runnable {
 
     /**
      * Conversion from screen rotation to JPEG orientation.
@@ -138,6 +170,53 @@ Runnable{
     private SparseArray<CameraFilter> cameraFilterMap = new SparseArray<>();
     private SurfaceTexture surfaceTexture;
     private int gwidth, gheight;
+    private  int originWidth, originHeight;
+
+    private SurfaceTexture cameraSurfaceTexture;
+    private int cameraTextureId;
+
+    private EGLDisplay eglDisplay;
+    private EGLSurface eglSurface;
+    private EGLContext eglContext;
+    private EGL10 egl10;
+
+    private static final int EGL_OPENGL_ES2_BIT = 4;
+    private static final int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
+    private static final int DRAW_INTERVAL = 1000 / 30;
+
+    private int mCurrentCameraId = CameraCharacteristics.LENS_FACING_BACK;
+    boolean isRotate180 = false;
+
+    public void switchCamera() {
+        if (mCurrentCameraId == CameraCharacteristics.LENS_FACING_BACK) {
+            mTextureView.setRotation(180);
+            isRotate180 = true;
+            mCurrentCameraId = CameraCharacteristics.LENS_FACING_FRONT;
+            closeCamera();
+            reopenCamera();
+
+        } else if (mCurrentCameraId == CameraCharacteristics.LENS_FACING_FRONT) {
+//            configureTransform(originWidth,originHeight);
+            mCurrentCameraId = CameraCharacteristics.LENS_FACING_BACK;
+            closeCamera();
+            mTextureView.setRotation(360);
+
+
+            reopenCamera();
+        }
+    }
+
+    private void reopenCamera() {
+//        if (renderThread != null && renderThread.isAlive()) {
+//            renderThread.interrupt();
+//        }
+        if (mTextureView.isAvailable()) {
+            openCamera(mTextureView.getWidth(), mTextureView.getHeight());
+//            renderThread.start();
+        } else {
+            mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
+        }
+    }
 
 
 
@@ -159,12 +238,15 @@ Runnable{
             if (renderThread != null && renderThread.isAlive()) {
                 renderThread.interrupt();
             }
+//            openCamera(width,height);
             renderThread = new Thread(Camera2BasicFragment.this);
 
             surfaceTexture = texture;
             gwidth = -width;
             gheight = -height;
-            openCamera(width, height);
+            originHeight = height;
+            originWidth = width;
+
             // Start rendering
             renderThread.start();
         }
@@ -499,7 +581,8 @@ Runnable{
         if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
             new ConfirmationDialog().show(getChildFragmentManager(), FRAGMENT_DIALOG);
         } else {
-            requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+            requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE}
+            , REQUEST_CAMERA_PERMISSION);
         }
     }
 
@@ -533,7 +616,7 @@ Runnable{
 
                 // We don't use a front facing camera in this sample.
                 Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
-                if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
+                if (facing != null && facing != mCurrentCameraId) {
                     continue;
                 }
 
@@ -709,14 +792,16 @@ Runnable{
      */
     private void createCameraPreviewSession() {
         try {
-            SurfaceTexture texture = mTextureView.getSurfaceTexture();
-            assert texture != null;
+//            SurfaceTexture texture = mTextureView.getSurfaceTexture();
+//            assert texture != null;
 
             // We configure the size of default buffer to be the size of camera preview we want.
-            texture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
+//            cameraSurfaceTexture
+            cameraSurfaceTexture.setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
 
             // This is the output Surface we need to start preview.
-            Surface surface = new Surface(texture);
+            Surface surface = new Surface(cameraSurfaceTexture);
+
 
             // We set up a CaptureRequest.Builder with the output Surface.
             mPreviewRequestBuilder
@@ -795,6 +880,18 @@ Runnable{
             matrix.postRotate(180, centerX, centerY);
         }
         mTextureView.setTransform(matrix);
+
+//        if(mCurrentCameraId==CameraCharacteristics.LENS_FACING_BACK) {
+//            if(isRotate180)
+//            mTextureView.setRotation(360);
+
+
+//        }
+//        else {
+//            if(isRotate180) {
+//                mTextureView.setRotation(-180);
+//            }
+//        }
     }
 
     /**
@@ -903,6 +1000,7 @@ Runnable{
      * finished.
      */
     private void unlockFocus() {
+
         try {
             // Reset the auto-focus trigger
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
@@ -923,7 +1021,12 @@ Runnable{
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.picture: {
-                takePicture();
+//                takePicture();
+                String pictureUrl  = FileUtils.saveImage(mTextureView.getBitmap(),getActivity());
+                Intent intent = new Intent(getActivity(),ImageActivity.class);
+                intent.putExtra(ImageActivity.INTENT_DATA,pictureUrl);
+
+                startActivity(intent);
                 break;
             }
             case R.id.info: {
@@ -948,8 +1051,155 @@ Runnable{
 
     @Override
     public void run() {
+        initGL(surfaceTexture);
+        Context context = getActivity();
+
+        // Setup camera filters map
+        cameraFilterMap.append(R.id.filter0, new OriginalFilter(context));
+        cameraFilterMap.append(R.id.filter1, new EdgeDetectionFilter(context));
+        cameraFilterMap.append(R.id.filter2, new PixelizeFilter(context));
+        cameraFilterMap.append(R.id.filter3, new EMInterferenceFilter(context));
+        cameraFilterMap.append(R.id.filter4, new TrianglesMosaicFilter(context));
+        cameraFilterMap.append(R.id.filter5, new LegofiedFilter(context));
+        cameraFilterMap.append(R.id.filter6, new TileMosaicFilter(context));
+        cameraFilterMap.append(R.id.filter7, new BlueorangeFilter(context));
+        cameraFilterMap.append(R.id.filter8, new ChromaticAberrationFilter(context));
+        cameraFilterMap.append(R.id.filter9, new BasicDeformFilter(context));
+        cameraFilterMap.append(R.id.filter10, new ContrastFilter(context));
+        cameraFilterMap.append(R.id.filter11, new NoiseWarpFilter(context));
+        cameraFilterMap.append(R.id.filter12, new RefractionFilter(context));
+        cameraFilterMap.append(R.id.filter13, new MappingFilter(context));
+        cameraFilterMap.append(R.id.filter14, new CrosshatchFilter(context));
+        cameraFilterMap.append(R.id.filter15, new LichtensteinEsqueFilter(context));
+        cameraFilterMap.append(R.id.filter16, new AsciiArtFilter(context));
+        cameraFilterMap.append(R.id.filter17, new MoneyFilter(context));
+        cameraFilterMap.append(R.id.filter18, new CrackedFilter(context));
+        cameraFilterMap.append(R.id.filter19, new PolygonizationFilter(context));
+        cameraFilterMap.append(R.id.filter20, new JFAVoronoiFilter(context));
+        setSelectedFilter(selectedFilterId);
+
+        // Create texture for camera preview
+        cameraTextureId = MyGLUtils.genTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
+        cameraSurfaceTexture = new SurfaceTexture(cameraTextureId);
+
+        // Start camera preview
+//        try {
+//            camera.setPreviewTexture(cameraSurfaceTexture);
+//            camera.startPreview();
+
+        getActivity().runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                openCamera(originWidth, originHeight);
+
+                // Stuff that updates the UI
+
+            }
+        });
+//        } catch (IOException ioe) {
+//            // Something bad happened
+//        }
+
+        // Render loop
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                if (gwidth < 0 && gheight < 0)
+                    GLES20.glViewport(0, 0, gwidth = -gwidth, gheight = -gheight);
+
+                GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
+                // Update the camera preview texture
+                synchronized (this) {
+                    cameraSurfaceTexture.updateTexImage();
+                }
+
+                // Draw camera preview
+                selectedFilter.draw(cameraTextureId, gwidth, gheight);
+
+                // Flush
+                GLES20.glFlush();
+                egl10.eglSwapBuffers(eglDisplay, eglSurface);
+
+                Thread.sleep(DRAW_INTERVAL);
+
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        cameraSurfaceTexture.release();
+        GLES20.glDeleteTextures(1, new int[]{cameraTextureId}, 0);
 
 
+    }
+
+    public void setSelectedFilter(int id) {
+        selectedFilterId = id;
+        selectedFilter = cameraFilterMap.get(id);
+        if (selectedFilter != null)
+            selectedFilter.onAttach();
+    }
+
+
+    private void initGL(SurfaceTexture texture) {
+        egl10 = (EGL10) EGLContext.getEGL();
+
+        eglDisplay = egl10.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
+        if (eglDisplay == EGL10.EGL_NO_DISPLAY) {
+            throw new RuntimeException("eglGetDisplay failed " +
+                    android.opengl.GLUtils.getEGLErrorString(egl10.eglGetError()));
+        }
+
+        int[] version = new int[2];
+        if (!egl10.eglInitialize(eglDisplay, version)) {
+            throw new RuntimeException("eglInitialize failed " +
+                    android.opengl.GLUtils.getEGLErrorString(egl10.eglGetError()));
+        }
+
+        int[] configsCount = new int[1];
+        EGLConfig[] configs = new EGLConfig[1];
+        int[] configSpec = {
+                EGL10.EGL_RENDERABLE_TYPE,
+                EGL_OPENGL_ES2_BIT,
+                EGL10.EGL_RED_SIZE, 8,
+                EGL10.EGL_GREEN_SIZE, 8,
+                EGL10.EGL_BLUE_SIZE, 8,
+                EGL10.EGL_ALPHA_SIZE, 8,
+                EGL10.EGL_DEPTH_SIZE, 0,
+                EGL10.EGL_STENCIL_SIZE, 0,
+                EGL10.EGL_NONE
+        };
+
+        EGLConfig eglConfig = null;
+        if (!egl10.eglChooseConfig(eglDisplay, configSpec, configs, 1, configsCount)) {
+            throw new IllegalArgumentException("eglChooseConfig failed " +
+                    android.opengl.GLUtils.getEGLErrorString(egl10.eglGetError()));
+        } else if (configsCount[0] > 0) {
+            eglConfig = configs[0];
+        }
+        if (eglConfig == null) {
+            throw new RuntimeException("eglConfig not initialized");
+        }
+
+        int[] attrib_list = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE};
+        eglContext = egl10.eglCreateContext(eglDisplay, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list);
+        eglSurface = egl10.eglCreateWindowSurface(eglDisplay, eglConfig, texture, null);
+
+        if (eglSurface == null || eglSurface == EGL10.EGL_NO_SURFACE) {
+            int error = egl10.eglGetError();
+            if (error == EGL10.EGL_BAD_NATIVE_WINDOW) {
+                Log.e(TAG, "eglCreateWindowSurface returned EGL10.EGL_BAD_NATIVE_WINDOW");
+                return;
+            }
+            throw new RuntimeException("eglCreateWindowSurface failed " +
+                    android.opengl.GLUtils.getEGLErrorString(error));
+        }
+
+        if (!egl10.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
+            throw new RuntimeException("eglMakeCurrent failed " +
+                    android.opengl.GLUtils.getEGLErrorString(egl10.eglGetError()));
+        }
     }
 
     /**
@@ -1056,7 +1306,7 @@ Runnable{
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            parent.requestPermissions(new String[]{Manifest.permission.CAMERA},
+                            parent.requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE},
                                     REQUEST_CAMERA_PERMISSION);
                         }
                     })

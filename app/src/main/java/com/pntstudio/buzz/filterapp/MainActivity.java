@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     Camera2BasicFragment camera2BasicFragment;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

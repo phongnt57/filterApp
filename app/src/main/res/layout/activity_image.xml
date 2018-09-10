@@ -2,12 +2,84 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.pntstudio.buzz.filterapp.ImageActivity">
     <ImageView
         android:id="@+id/image_img"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="match_parent" />
+    <LinearLayout
+        android:id="@+id/filterConfigPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_above="@id/menuBtnPanel">
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/filterSelectorPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_above="@id/menuBtnPanel">
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/menuBtnPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/background"
+        android:layout_alignParentBottom="true">
+        <ImageButton
+            android:id="@+id/openPictureBtn"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_delete"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:background="#00000000"
+            android:scaleType="fitCenter"/>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_weight="1">
+            <ImageButton
+                android:id="@+id/openCameraBtn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_color_mix"
+                android:background="#00000000"
+                android:scaleType="fitCenter"/>
+            <ImageButton
+                android:id="@+id/capturePictureBtn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:background="@drawable/ic_delete"
+                android:src="@drawable/ic_magic_wand"
+                android:scaleType="fitCenter"
+                android:layout_centerHorizontal="true"
+                android:layout_above="@id/menuBtnPanel"
+                android:layout_margin="8dp"/>
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/selectFilterBtn"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_social_normal"
+            android:background="#00000000"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:scaleType="fitCenter"/>
+
+    </LinearLayout>
 
 </RelativeLayout>

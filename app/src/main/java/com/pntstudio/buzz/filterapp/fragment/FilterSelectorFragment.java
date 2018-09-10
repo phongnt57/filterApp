@@ -9,12 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 
-import com.ajscape.pixatoon.R;
-import com.ajscape.pixatoon.lib.Filter;
-import com.ajscape.pixatoon.lib.FilterManager;
-import com.ajscape.pixatoon.lib.FilterType;
-import com.ajscape.pixatoon.ui.MainActivity;
-import com.ajscape.pixatoon.ui.interfaces.FilterSelectorListener;
+
+import com.pntstudio.buzz.filterapp.MainActivity;
+import com.pntstudio.buzz.filterapp.R;
+import com.pntstudio.buzz.filterapp.filter_open_cv.FilterManager;
+import com.pntstudio.buzz.filterapp.filter_open_cv.FilterType;
+import com.pntstudio.buzz.filterapp.fragment.interfaces.FilterSelectorListener;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -9,6 +9,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 
+import com.pntstudio.buzz.filterapp.R;
 import com.pntstudio.buzz.filterapp.filter_open_cv.Filter;
 import com.pntstudio.buzz.filterapp.fragment.interfaces.FilterConfigListener;
 

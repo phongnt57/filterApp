@@ -1,6 +1,7 @@
 package com.pntstudio.buzz.filterapp.fragment.interfaces;
 
-import com.pntstudio.buzz.filterapp.filter_open_cv.FilterType;
+
+import com.ajscape.pixatoon.lib.FilterType;
 
 /**
  * Filter Selector Listener interface

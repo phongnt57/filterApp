@@ -29,8 +29,9 @@ public class FileUtils {
 
 
     public static String getPathTempFile(Context context) {
-        Date currentDate = new Date(System.currentTimeMillis());
-        return getAppImagePath(context) + "/" + currentDate.getTime() + ".png";
+//        Date currentDate = new Date(System.currentTimeMillis());
+//        return getAppImagePath(context) + "/" + currentDate.getTime() + ".png";
+        return getAppImagePath(context) + "/" + "xxx" + ".png";
     }
     private static String getAppImagePath(Context context) {
         return context.getExternalFilesDir(Environment.DIRECTORY_PICTURES).getAbsolutePath();

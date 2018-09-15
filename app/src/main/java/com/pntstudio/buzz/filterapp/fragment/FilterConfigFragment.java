@@ -9,8 +9,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 
+import com.ajscape.pixatoon.lib.Filter;
 import com.pntstudio.buzz.filterapp.R;
-import com.pntstudio.buzz.filterapp.filter_open_cv.Filter;
 import com.pntstudio.buzz.filterapp.fragment.interfaces.FilterConfigListener;
 
 import java.util.List;

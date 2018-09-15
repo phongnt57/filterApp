@@ -1,28 +1,61 @@
 package com.pntstudio.buzz.filterapp;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
-import android.widget.ImageView;
+import android.view.View;
+import android.widget.ImageButton;
 
-import com.pntstudio.buzz.filterapp.filter_open_cv.FilterManager;
+import com.ajscape.pixatoon.lib.Filter;
+import com.ajscape.pixatoon.lib.FilterManager;
+import com.ajscape.pixatoon.lib.FilterType;
+import com.ajscape.pixatoon.lib.Native;
+import com.ajscape.pixatoon.ui.Utils;
 import com.pntstudio.buzz.filterapp.fragment.FilterConfigFragment;
 import com.pntstudio.buzz.filterapp.fragment.FilterSelectorFragment;
+import com.pntstudio.buzz.filterapp.fragment.interfaces.FilterConfigListener;
+import com.pntstudio.buzz.filterapp.fragment.interfaces.FilterSelectorListener;
+import com.pntstudio.buzz.filterapp.view.PictureSurfaceView;
 
-public class ImageActivity extends AppCompatActivity {
+
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public class ImageActivity extends AppCompatActivity implements View.OnClickListener
+        ,FilterSelectorListener,FilterConfigListener{
     private static final String TAG = "ImageActivity";
 
     public static String INTENT_DATA = "image_path";
-    private ImageView mImageView;
+    private PictureSurfaceView mPictureView;
+    private ImageButton mTrashImgBtn;
+    private ImageButton mConfigImgBtn;
+    private ImageButton mFilterImgBtn;
+    private  ImageButton mShareImgBtn;
 
+
+    private Bitmap mScaledInputBitmap, mScaledOutputBitmap;
+    private Mat mScaledInputMat, mScaledOutputMat;
+
+    private PictureUpdateThread mUpdateThread;
+    private AtomicBoolean mPendingUpdate = new AtomicBoolean(false);
+    private boolean mInputRotated = false;
     private FilterManager mFilterManager;
+
+
+
     private FilterSelectorFragment mFilterSelectorFragment;
     private FilterConfigFragment mFilterConfigFragment;
 
     // Statically Load native OpenCV and image filter implementation libraries
     static {
+        Log.e(TAG,"load library");
         System.loadLibrary("opencv_java3");
         System.loadLibrary("image_filters");
     }
@@ -32,13 +65,28 @@ public class ImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         setContentView(R.layout.activity_image);
-        mImageView  = findViewById(R.id.image_img);
-        String imagePath = getIntent().getStringExtra(INTENT_DATA);
-        Bitmap bmImg = BitmapFactory.decodeFile(imagePath);
-        mImageView.setImageBitmap(bmImg);
-
-
+        mPictureView  = findViewById(R.id.image_img);
+        mTrashImgBtn = findViewById(R.id.img_trash);
+        mConfigImgBtn = findViewById(R.id.img_config);
+        mFilterImgBtn = findViewById(R.id.img_filter);
+        mShareImgBtn = findViewById(R.id.img_share);
         mFilterManager = FilterManager.getInstance();
+
+        String imagePath = getIntent().getStringExtra(INTENT_DATA);
+//        Bitmap bmImg = BitmapFactory.decodeFile(imagePath);
+//        mPictureView.setImageBitmap(bmImg);
+        loadPicture(imagePath);
+        mTrashImgBtn.setOnClickListener(this);
+        mConfigImgBtn.setOnClickListener(this);
+        mFilterImgBtn.setOnClickListener(this);
+        mShareImgBtn.setOnClickListener(this);
+
+        // Load sketch texture
+        // important to use pencil sketch
+        loadSketchTexture(getApplicationContext().getResources(),
+                com.ajscape.pixatoon.R.drawable.sketch_texture);
+
+
 
         mFilterSelectorFragment = new FilterSelectorFragment();
     }
@@ -63,7 +111,7 @@ public class ImageActivity extends AppCompatActivity {
             mFilterConfigFragment = new FilterConfigFragment();
             mFilterConfigFragment.setFilter(mFilterManager.getCurrentFilter());
 
-            mConfigFilterBtn.setImageResource(R.drawable.icon_btn_settings_on);
+//            mConfigFilterBtn.setImageResource(R.drawable.icon_btn_settings_on);
             getFragmentManager()
                     .beginTransaction()
                     .add(R.id.filterConfigPanel, mFilterConfigFragment)
@@ -89,5 +137,196 @@ public class ImageActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onClick(View v) {
+        // Detect clicked view, and execute actions accordingly
+        switch(v.getId()) {
+            case R.id.img_trash:
 
+                break;
+            case R.id.img_config:
+                closeFilterSelector();
+                if(!isFilterConfigVisible())
+                    openCurrentFilterConfig();
+                else
+                    closeCurrentFilterConfig();
+
+                break;
+            case R.id.img_filter:
+                closeCurrentFilterConfig();
+                if(!mFilterSelectorFragment.isVisible())
+                    openFilterSelector();
+                else
+                    closeFilterSelector();
+                break;
+            case R.id.img_share:
+
+                break;
+
+
+        }
+
+    }
+    /**
+     * Close filter configuration panel
+     */
+    private void closeCurrentFilterConfig() {
+        if (isFilterConfigVisible()) {
+            getFragmentManager()
+                    .beginTransaction()
+                    .remove(mFilterConfigFragment)
+                    .commit();
+            Log.d(TAG,"filter config closed");
+        }
+    }
+
+    /**
+     * Close filter selector panel, if opened
+     */
+    private void closeFilterSelector() {
+        if(mFilterSelectorFragment.isVisible()) {
+            getFragmentManager()
+                    .beginTransaction()
+                    .remove(mFilterSelectorFragment)
+                    .commit();
+            Log.d(TAG, "filter selector closed");
+        }
+    }
+
+    @Override
+    public void onFilterConfigChanged() {
+        updatePicture();
+
+    }
+
+
+
+    @Override
+    public void onFilterSelect(FilterType filterType) {
+        if(mFilterManager.getCurrentFilter()==null || filterType != mFilterManager.getCurrentFilter().getType()) {
+            mFilterManager.setCurrentFilter(filterType);
+            Log.d(TAG, "current filter set to " + filterType.toString());
+//            if (mPictureViewerFragment.isVisible()) {
+//                mPictureViewerFragment.updatePicture();
+//            }
+            // Display selected filter name as Toast
+//            displayMessage(filterType.toString());
+            updatePicture();
+        }
+
+    }
+    public void loadPicture(String pictureFilePath) {
+        Log.d(TAG,"load picture from path="+pictureFilePath);
+
+        // Load mat from filepath
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+        Bitmap inputBitmap = BitmapFactory.decodeFile(pictureFilePath, options);
+
+        // Get dimensions of screen
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int width = displayMetrics.widthPixels;
+        int height = displayMetrics.heightPixels;
+
+        // If input is landscape, rotate for better screen coverage
+        if(inputBitmap.getWidth()>inputBitmap.getHeight()) {
+            inputBitmap = Utils.rotateBitmap(inputBitmap, 90);
+            mInputRotated = true;
+            mFilterManager.setSketchFlip(true);
+        } else {
+            mInputRotated = false;
+            mFilterManager.setSketchFlip(false);
+        }
+
+        // Get scaled bitmap and mat fit to screen, for preview filter display
+        mScaledInputBitmap = Utils.resizeBitmap(inputBitmap, width, height);
+        mScaledOutputBitmap = mScaledInputBitmap.copy(mScaledInputBitmap.getConfig(), true);
+
+        if(mScaledInputMat != null)
+            mScaledInputMat.release();
+        mScaledInputMat = new Mat(mScaledInputBitmap.getHeight(), mScaledInputBitmap.getWidth(), CvType.CV_8UC4);
+
+        if(mScaledOutputMat != null)
+            mScaledOutputMat.release();
+        mScaledOutputMat = new Mat(mScaledInputBitmap.getHeight(), mScaledInputBitmap.getWidth(), CvType.CV_8UC4);
+        org.opencv.android.Utils.bitmapToMat(mScaledInputBitmap, mScaledInputMat);
+        mScaledInputMat.copyTo(mScaledOutputMat);
+
+        // Set view with scaled bitmap
+        updatePicture();
+    }
+
+    public void updatePicture() {
+        if(mUpdateThread == null || !mUpdateThread.isAlive()) {
+            mPendingUpdate.set(false);
+            mUpdateThread = new PictureUpdateThread();
+            mUpdateThread.start();
+        } else {
+            mPendingUpdate.set(true);
+        }
+    }
+
+
+    class PictureUpdateThread extends Thread {
+
+        @Override
+        public void run() {
+            do {
+                mPendingUpdate.set(false);
+                Filter currentFilter = mFilterManager.getCurrentFilter();
+                if (currentFilter != null) {
+                    if(mFilterManager.getFilterScaleFactor() < 1.0)
+                        mFilterManager.setFilterScaleFactor(1.0);
+                    currentFilter.process(mScaledInputMat, mScaledOutputMat);
+                    org.opencv.android.Utils.matToBitmap(mScaledOutputMat, mScaledOutputBitmap);
+                }
+                mPictureView.setImageBitmap(mScaledOutputBitmap);
+            }while(mPendingUpdate.get() == true);
+        }
+    }
+
+
+
+    @Override
+    protected void onDestroy() {
+        mScaledInputBitmap.recycle();
+        mScaledInputBitmap = null;
+        mScaledOutputBitmap.recycle();
+        mScaledOutputBitmap = null;
+        mScaledInputMat.release();
+        mScaledOutputMat.release();
+        Log.d(TAG, "Picture fragment view destroyed");
+        super.onDestroy();
+        super.onDestroy();
+    }
+    @Override
+    public void onPause() {
+        // Terminate picture update thread
+        if(mUpdateThread != null && mUpdateThread.isAlive()) {
+            boolean retry;
+            do {
+                try {
+                    mUpdateThread.join();
+                    retry = false;
+                    Log.d(TAG,"Update thread terminated");
+                } catch (InterruptedException e) {
+                    Log.d(TAG,"Error while terminating update thread...retrying");
+                    retry = true;
+                }
+            } while (retry);
+        }
+        super.onPause();
+    }
+
+    private void loadSketchTexture(Resources res, int sketchTexRes) {
+        Mat mat, tempMat;
+        Bitmap bmp = BitmapFactory.decodeResource(res, sketchTexRes);
+        tempMat = new Mat(bmp.getHeight(), bmp.getWidth(), CvType.CV_8UC4);
+        org.opencv.android.Utils.bitmapToMat(bmp, tempMat);
+        mat = new Mat(tempMat.size(), CvType.CV_8UC1);
+        Imgproc.cvtColor(tempMat, mat, Imgproc.COLOR_RGBA2GRAY);
+        Native.setSketchTexture(mat.getNativeObjAddr());
+    }
 }

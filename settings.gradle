@@ -1,2 +1,4 @@
-include ':app', ':opencv'
-project(':opencv').projectDir = new File('libraries/opencv')
+include ':app-pixatoon', ':opencv', ':library:opencv3', ':filter'
+project(':app-pixatoon').projectDir = new File('libraries/PixaToon-master/app')
+project(':opencv').projectDir = new File('libraries/PixaToon-master/libraries/opencv')
+project(':filter').projectDir = new File('app')

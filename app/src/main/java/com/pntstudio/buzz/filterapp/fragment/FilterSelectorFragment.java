@@ -10,10 +10,11 @@ import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 
 
-import com.pntstudio.buzz.filterapp.MainActivity;
+import com.ajscape.pixatoon.lib.Filter;
+import com.ajscape.pixatoon.lib.FilterManager;
+import com.ajscape.pixatoon.lib.FilterType;
 import com.pntstudio.buzz.filterapp.R;
-import com.pntstudio.buzz.filterapp.filter_open_cv.FilterManager;
-import com.pntstudio.buzz.filterapp.filter_open_cv.FilterType;
+
 import com.pntstudio.buzz.filterapp.fragment.interfaces.FilterSelectorListener;
 
 import java.util.HashMap;
@@ -50,8 +51,8 @@ public class FilterSelectorFragment extends Fragment implements View.OnClickList
         for(int filterBtnId : mFilterMap.keySet()) {
             View filterSelectBtn = view.findViewById(filterBtnId);
             filterSelectBtn.setOnClickListener(this);
-            if(((MainActivity)getActivity()).getOrientation() == Configuration.ORIENTATION_LANDSCAPE)
-                filterSelectBtn.setRotation(90);
+//            if(((MainActivity)getActivity()).getOrientation() == Configuration.ORIENTATION_LANDSCAPE)
+//                filterSelectBtn.setRotation(90);
         }
 
         mScrollBar = (HorizontalScrollView)view.findViewById(R.id.scrollBar);

@@ -21,6 +21,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import org.opencv.android.OpenCVLoader;
+
 public class MainActivity extends AppCompatActivity {
     private int filterId = R.id.filter0;
     Camera2BasicFragment camera2BasicFragment;
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         camera2BasicFragment = Camera2BasicFragment.newInstance();
         if (null == savedInstanceState) {
             getSupportFragmentManager().beginTransaction()

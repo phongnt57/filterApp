@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="com.pntstudio.buzz.filterapp.MenuActivity">
+
+    <com.daimajia.slider.library.Indicators.PagerIndicator
+        android:id="@+id/custom_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:gravity="center"
+        />
+    <LinearLayout
+        android:gravity="center"
+        android:layout_marginTop="320dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/category_img"
+            android:layout_width="@dimen/small_icon_size"
+            android:layout_height="@dimen/small_icon_size"
+            android:src="@drawable/ic_picture"
+            android:layout_gravity="bottom"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            />
+        <ImageView
+            android:id="@+id/camera_img"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_camera"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+        <ImageView
+            android:id="@+id/save_img"
+            android:layout_width="@dimen/small_icon_size"
+            android:layout_height="@dimen/small_icon_size"
+            android:src="@drawable/ic_save"
+            android:layout_gravity="bottom"/>
+
+
+
+
+    </LinearLayout>
+
+
+    <com.google.android.gms.ads.AdView
+        xmlns:ads="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/adView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        ads:adSize="BANNER"
+        ads:adUnitId="ca-app-pub-3940256099942544/6300978111">
+    </com.google.android.gms.ads.AdView>
+
+
+</android.support.design.widget.CoordinatorLayout>

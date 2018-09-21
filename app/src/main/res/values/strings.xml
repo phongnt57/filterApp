@@ -3,4 +3,12 @@
     <string name="request_permission">This app needs camera permission</string>
     <string name="picture">Capture</string>
     <string name="camera_error">Error when create camera!!</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_activity_main3">Main3Activity</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="admob_app_id">ca-app-pub-7735131451668227~9248212282</string>
 </resources>

@@ -299,7 +299,6 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         mScaledOutputMat.release();
         Log.d(TAG, "Picture fragment view destroyed");
         super.onDestroy();
-        super.onDestroy();
     }
     @Override
     public void onPause() {

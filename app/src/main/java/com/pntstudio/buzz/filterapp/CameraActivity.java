@@ -23,7 +23,7 @@ import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
 
-public class MainActivity extends AppCompatActivity {
+public class CameraActivity extends AppCompatActivity {
     private int filterId = R.id.filter0;
     Camera2BasicFragment camera2BasicFragment;
 
@@ -55,10 +55,7 @@ public class MainActivity extends AppCompatActivity {
         // TODO: need tidy up
         if (filterId == R.id.capture) {
             camera2BasicFragment.switchCamera();
-//            Toast.makeText(this,
-//                    capture() ? "The capture has been saved to your sdcard root path." :
-//                            "Save failed!",
-//                    Toast.LENGTH_SHORT).show();
+
             return true;
         }
 

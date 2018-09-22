@@ -5,8 +5,6 @@
       <module fileurl="file://$PROJECT_DIR$/libraries/PixaToon-master/app/app-pixatoon.iml" filepath="$PROJECT_DIR$/libraries/PixaToon-master/app/app-pixatoon.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/filter.iml" filepath="$PROJECT_DIR$/.idea/filter.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/filter-filter.iml" filepath="$PROJECT_DIR$/app/filter-filter.iml" />
-      <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
-      <module fileurl="file://$PROJECT_DIR$/library/opencv3/library-opencv3.iml" filepath="$PROJECT_DIR$/library/opencv3/library-opencv3.iml" />
       <module fileurl="file://$PROJECT_DIR$/libraries/PixaToon-master/libraries/opencv/opencv.iml" filepath="$PROJECT_DIR$/libraries/PixaToon-master/libraries/opencv/opencv.iml" />
     </modules>
   </component>

@@ -543,8 +543,10 @@ public class Camera2BasicFragment extends Fragment
 
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
-        view.findViewById(R.id.picture).setOnClickListener(this);
-        view.findViewById(R.id.info).setOnClickListener(this);
+        view.findViewById(R.id.picture_img).setOnClickListener(this);
+        view.findViewById(R.id.info_img).setOnClickListener(this);
+        view.findViewById(R.id.ic_cancel_img).setOnClickListener(this);
+        view.findViewById(R.id.swich_camera_img).setOnClickListener(this);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
     }
 
@@ -832,7 +834,7 @@ public class Camera2BasicFragment extends Fragment
                                 mPreviewRequest = mPreviewRequestBuilder.build();
                                 mCaptureSession.setRepeatingRequest(mPreviewRequest,
                                         mCaptureCallback, mBackgroundHandler);
-                            } catch (CameraAccessException e) {
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
                         }
@@ -1020,7 +1022,7 @@ public class Camera2BasicFragment extends Fragment
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.picture: {
+            case R.id.picture_img: {
 //                takePicture();
                 String pictureUrl  = FileUtils.saveImage(mTextureView.getBitmap(),getActivity());
                 Intent intent = new Intent(getActivity(),ImageActivity.class);
@@ -1029,16 +1031,18 @@ public class Camera2BasicFragment extends Fragment
                 startActivity(intent);
                 break;
             }
-            case R.id.info: {
-                Activity activity = getActivity();
-//                if (null != activity) {
-//                    new AlertDialog.Builder(activity)
-//                            .setMessage(R.string.intro_message)
-//                            .setPositiveButton(android.R.string.ok, null)
-//                            .show();
-//                }
+            case R.id.info_img: {
+//                Activity activity = getActivity();
+
+
                 break;
             }
+            case R.id.ic_cancel_img:
+                getActivity().finish();
+                break;
+            case R.id.swich_camera_img:
+                switchCamera();
+                break;
         }
     }
 

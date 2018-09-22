@@ -4,6 +4,9 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="control_background">#cc4285f4</color>
+    <color name="statusBarColor">#ff33b5e5</color>
+    <color name="translucentColor">#29000000</color>
+
 
     <color name="background">#50333333</color>
     <color name="foreground">#ff33b5e5</color>

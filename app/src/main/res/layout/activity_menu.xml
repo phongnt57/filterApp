@@ -1,49 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    android:background="@color/translucentColor"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/main_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context="com.pntstudio.buzz.filterapp.MenuActivity">
+    xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
+    android:orientation="vertical">
+
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:ads="http://schemas.android.com/apk/lib/com.google.ads"
+    >
+
+    <com.daimajia.slider.library.SliderLayout
+        android:background="@color/translucentColor"
+        android:id="@+id/slider_layout"
+        android:layout_width="match_parent"
+        android:layout_height="320dp"/>
+
 
     <com.daimajia.slider.library.Indicators.PagerIndicator
         android:id="@+id/custom_indicator"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:gravity="center"
         />
+
+
+
+</android.support.design.widget.CoordinatorLayout>
     <LinearLayout
+        android:layout_marginTop="@dimen/fab_margin"
         android:gravity="center"
-        android:layout_marginTop="320dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <ImageView
-            android:id="@+id/category_img"
-            android:layout_width="@dimen/small_icon_size"
-            android:layout_height="@dimen/small_icon_size"
-            android:src="@drawable/ic_picture"
-            android:layout_gravity="bottom"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            />
+
+
         <ImageView
             android:id="@+id/camera_img"
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:src="@drawable/ic_camera"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"/>
-        <ImageView
-            android:id="@+id/save_img"
-            android:layout_width="@dimen/small_icon_size"
-            android:layout_height="@dimen/small_icon_size"
-            android:src="@drawable/ic_save"
-            android:layout_gravity="bottom"/>
-
-
+            android:src="@drawable/ic_camera"/>
 
 
     </LinearLayout>
+    <LinearLayout
+        android:layout_margin="@dimen/activity_vertical_margin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="1"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_marginRight="8dp"
+            android:id="@+id/select_picture_ll"
+            android:background="@drawable/bg_round_orange"
+            android:layout_width="0dp"
+            android:layout_height="90dp"
+            android:orientation="vertical"
+            android:layout_weight="0.5">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_picture"
+                android:layout_marginLeft="@dimen/fab_margin"
+                android:layout_marginTop="@dimen/fab_margin"
+                />
+            <TextView
+                android:padding="5dp"
+                android:layout_marginTop="3dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:layout_marginLeft="@dimen/appbar_padding_top"
+                android:textColor="@android:color/white"
+                android:text="@string/choose_your_picture"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_marginLeft="8dp"
+            android:id="@+id/category_ll"
+            android:background="@drawable/bg_round_blue"
+            android:layout_width="0dp"
+            android:layout_height="90dp"
+            android:orientation="vertical"
+            android:layout_weight="0.5">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_save"
+                android:layout_marginLeft="@dimen/fab_margin"
+                android:layout_marginTop="@dimen/fab_margin"
+                />
+            <TextView
+                android:layout_marginTop="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:layout_marginLeft="@dimen/appbar_padding_top"
+                android:textColor="@android:color/white"
+                android:text="@string/your_gallery"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
 
 
     <com.google.android.gms.ads.AdView
@@ -55,8 +121,8 @@
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
         ads:adSize="BANNER"
-        ads:adUnitId="ca-app-pub-3940256099942544/6300978111">
+        ads:adUnitId=""
+
+        >
     </com.google.android.gms.ads.AdView>
-
-
-</android.support.design.widget.CoordinatorLayout>
+</LinearLayout>

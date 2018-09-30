@@ -35,8 +35,8 @@ public class MappingFilter extends CameraFilter {
         program = MyGLUtils.buildProgram(context, R.raw.vertext, R.raw.mapping);
 
         // Load the texture will need for the shader
-        texture2Id = MyGLUtils.loadTexture(context, R.raw.tex07, new int[2]);
-//        texture2Id = MyGLUtils.loadTexture(context, R.drawable.sketch_texture, new int[2]);
+//        texture2Id = MyGLUtils.loadTexture(context, R.raw.rain_drop, new int[2]);
+        texture2Id = MyGLUtils.loadTexture(context, R.drawable.sketch_texture, new int[2]);
 
     }
 

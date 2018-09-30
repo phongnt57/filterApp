@@ -61,6 +61,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.pntstudio.buzz.filterapp.filter_opengl.AsciiArtFilter;
@@ -86,6 +87,8 @@ import com.pntstudio.buzz.filterapp.filter_opengl.PolygonizationFilter;
 import com.pntstudio.buzz.filterapp.filter_opengl.RefractionFilter;
 import com.pntstudio.buzz.filterapp.filter_opengl.TileMosaicFilter;
 import com.pntstudio.buzz.filterapp.filter_opengl.TrianglesMosaicFilter;
+import com.pntstudio.buzz.filterapp.fragment.FilterCameraFragment;
+import com.pntstudio.buzz.filterapp.model.FilterCameraModel;
 import com.pntstudio.buzz.filterapp.utils.FileUtils;
 
 import java.io.File;
@@ -113,6 +116,8 @@ public class Camera2BasicFragment extends Fragment
     /**
      * Conversion from screen rotation to JPEG orientation.
      */
+
+    private FilterCameraFragment mFilterCameraFragment;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
     private static final int REQUEST_CAMERA_PERMISSION = 1;
     private static final String FRAGMENT_DIALOG = "dialog";
@@ -167,6 +172,7 @@ public class Camera2BasicFragment extends Fragment
     private Thread renderThread;
     private CameraFilter selectedFilter;
     private int selectedFilterId = R.id.filter0;
+    private  FilterCameraModel currentFilterModel ;
     private SparseArray<CameraFilter> cameraFilterMap = new SparseArray<>();
     private SurfaceTexture surfaceTexture;
     private int gwidth, gheight;
@@ -207,12 +213,9 @@ public class Camera2BasicFragment extends Fragment
     }
 
     private void reopenCamera() {
-//        if (renderThread != null && renderThread.isAlive()) {
-//            renderThread.interrupt();
-//        }
+
         if (mTextureView.isAvailable()) {
             openCamera(mTextureView.getWidth(), mTextureView.getHeight());
-//            renderThread.start();
         } else {
             mTextureView.setSurfaceTextureListener(mSurfaceTextureListener);
         }
@@ -535,19 +538,24 @@ public class Camera2BasicFragment extends Fragment
         return new Camera2BasicFragment();
     }
 
+    ProgressBar mProgessBar;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         return inflater.inflate(R.layout.fragment_camera2_basic, container, false);
     }
 
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         view.findViewById(R.id.picture_img).setOnClickListener(this);
-        view.findViewById(R.id.info_img).setOnClickListener(this);
+        view.findViewById(R.id.info_filter_img).setOnClickListener(this);
         view.findViewById(R.id.ic_cancel_img).setOnClickListener(this);
         view.findViewById(R.id.swich_camera_img).setOnClickListener(this);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
+        mProgessBar = view.findViewById(R.id.progess_bar);
+        mFilterCameraFragment = new FilterCameraFragment();
     }
 
     @Override
@@ -580,19 +588,17 @@ public class Camera2BasicFragment extends Fragment
     }
 
     private void requestCameraPermission() {
-        if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-            new ConfirmationDialog().show(getChildFragmentManager(), FRAGMENT_DIALOG);
-        } else {
+
             requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE}
             , REQUEST_CAMERA_PERMISSION);
-        }
+
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+            if ( grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 ErrorDialog.newInstance(getString(R.string.request_permission))
                         .show(getChildFragmentManager(), FRAGMENT_DIALOG);
             }
@@ -1019,20 +1025,40 @@ public class Camera2BasicFragment extends Fragment
         }
     }
 
+    public boolean handleBackPress(){
+        if(mFilterCameraFragment!=null && mFilterCameraFragment.isVisible()){
+            getActivity().getFragmentManager()
+                    .beginTransaction()
+                    .remove(mFilterCameraFragment)
+                    .commit();
+            return false;
+        }else return true;
+    }
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.picture_img: {
 //                takePicture();
-                String pictureUrl  = FileUtils.saveImage(mTextureView.getBitmap(),getActivity());
+                String pictureUrl  = FileUtils.saveImage(mTextureView.getBitmap(),getActivity(),mCurrentCameraId);
                 Intent intent = new Intent(getActivity(),ImageActivity.class);
                 intent.putExtra(ImageActivity.INTENT_DATA,pictureUrl);
-
                 startActivity(intent);
                 break;
             }
-            case R.id.info_img: {
+            case R.id.info_filter_img: {
 //                Activity activity = getActivity();
+                if(mFilterCameraFragment!=null && mFilterCameraFragment.isVisible()) {
+                    getActivity().getFragmentManager()
+                            .beginTransaction()
+                            .remove(mFilterCameraFragment)
+                            .commit();
+                }else {
+                    getActivity().getFragmentManager()
+                            .beginTransaction()
+                            .add(R.id.filter_frame_layout,mFilterCameraFragment)
+                            .commit();
+
+                }
 
 
                 break;
@@ -1059,6 +1085,8 @@ public class Camera2BasicFragment extends Fragment
         Context context = getActivity();
 
         // Setup camera filters map
+//        currentFilterModel =  new FilterCameraModel(R.id.filter0,"", new OriginalFilter(getActivity()),R.drawable.ic_color_mix);
+
         cameraFilterMap.append(R.id.filter0, new OriginalFilter(context));
         cameraFilterMap.append(R.id.filter1, new EdgeDetectionFilter(context));
         cameraFilterMap.append(R.id.filter2, new PixelizeFilter(context));
@@ -1141,6 +1169,13 @@ public class Camera2BasicFragment extends Fragment
     public void setSelectedFilter(int id) {
         selectedFilterId = id;
         selectedFilter = cameraFilterMap.get(id);
+        if (selectedFilter != null)
+            selectedFilter.onAttach();
+    }
+
+    public void setSelectedFilter(FilterCameraModel model) {
+        selectedFilterId = model.getId();
+        selectedFilter = cameraFilterMap.get(selectedFilterId);
         if (selectedFilter != null)
             selectedFilter.onAttach();
     }
@@ -1299,33 +1334,35 @@ public class Camera2BasicFragment extends Fragment
     /**
      * Shows OK/Cancel confirmation dialog about camera permission.
      */
-    public static class ConfirmationDialog extends DialogFragment {
+//    public static class ConfirmationDialog extends DialogFragment {
+//
+//        @NonNull
+//        @Override
+//        public Dialog onCreateDialog(Bundle savedInstanceState) {
+//            final Fragment parent = getParentFragment();
+//            return new AlertDialog.Builder(getActivity())
+//                    .setMessage(R.string.request_permission)
+//                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            parent.requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE},
+//                                    REQUEST_CAMERA_PERMISSION);
+//                        }
+//                    })
+//                    .setNegativeButton(android.R.string.cancel,
+//                            new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface dialog, int which) {
+//                                    Activity activity = parent.getActivity();
+//                                    if (activity != null) {
+//                                        activity.finish();
+//                                    }
+//                                }
+//                            })
+//                    .create();
+//        }
+//    }
 
-        @NonNull
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            final Fragment parent = getParentFragment();
-            return new AlertDialog.Builder(getActivity())
-                    .setMessage(R.string.request_permission)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            parent.requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                    REQUEST_CAMERA_PERMISSION);
-                        }
-                    })
-                    .setNegativeButton(android.R.string.cancel,
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Activity activity = parent.getActivity();
-                                    if (activity != null) {
-                                        activity.finish();
-                                    }
-                                }
-                            })
-                    .create();
-        }
-    }
+
 
 }

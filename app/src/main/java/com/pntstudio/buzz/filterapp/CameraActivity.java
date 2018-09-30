@@ -21,6 +21,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.pntstudio.buzz.filterapp.model.FilterCameraModel;
+
 import org.opencv.android.OpenCVLoader;
 
 public class CameraActivity extends AppCompatActivity {
@@ -67,4 +69,14 @@ public class CameraActivity extends AppCompatActivity {
         return true;
     }
 
+    public void setFilterCamera(FilterCameraModel filterCamera) {
+        camera2BasicFragment.setSelectedFilter(filterCamera);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(camera2BasicFragment.handleBackPress()) {
+            super.onBackPressed();
+        }
+    }
 }

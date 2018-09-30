@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "955712714382",
+    "firebase_url": "https://sketch-image.firebaseio.com",
+    "project_id": "sketch-image",
+    "storage_bucket": "sketch-image.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:955712714382:android:9dbcfd8a3452d07b",
+        "android_client_info": {
+          "package_name": "com.pntstudio.buzz.filterapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "955712714382-e5bgjosm6r902e2eskitr8no3fhqmn5n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-Ihx5jfQd5j_p3sv8FlLcrok8wXQtP4o"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

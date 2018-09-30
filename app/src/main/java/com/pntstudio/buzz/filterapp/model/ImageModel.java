@@ -23,4 +23,9 @@ public class ImageModel {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    public ImageModel(String url, String title) {
+        this.url = url;
+        this.title = title;
+    }
 }

@@ -52,17 +52,12 @@ public class MenuActivity extends AppCompatActivity implements View.OnClickListe
         mSelectPictureLl = findViewById(R.id.select_picture_ll);
         mCategoryLl = findViewById(R.id.category_ll);
 
-        Window w = getWindow();
-        w.setFlags(
-                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,
-                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-
-
         initAd();
-        initPageIndicator();
         mCameraImg.setOnClickListener(this);
         mSelectPictureLl.setOnClickListener(this);
         mCategoryLl.setOnClickListener(this);
+        initPageIndicator();
+
 
 
     }

@@ -4,6 +4,7 @@ package com.ajscape.pixatoon.lib;
  * Enum for supported image filter types
  */
 public enum FilterType {
+    COLOR_ORIGIN ("Origin"),
     COLOR_CARTOON("Color Cartoon"),
     GRAY_CARTOON("Gray Cartoon"),
     PENCIL_SKETCH("Pencil Sketch"),

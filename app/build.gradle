@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+
+
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -10,6 +12,9 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ext.enableCrashlytics = true
+//        ext.alwaysUpdateBuildId = false
+
     }
     buildTypes {
         release {
@@ -36,6 +41,11 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads:15.0.1'
 
     implementation 'com.google.android.gms:play-services-ads:15.0.1'
+    // Check for v11.4.2 or higher
+    implementation 'com.google.firebase:firebase-core:15.0.0'
+
+    // Add dependency
+//    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.5'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
@@ -43,3 +53,5 @@ dependencies {
     implementation project(':app-pixatoon')
     compile project(path: ':opencv')
 }
+apply plugin: 'com.google.gms.google-services'
+

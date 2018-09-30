@@ -1,14 +1,18 @@
 package com.pntstudio.buzz.filterapp;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.v7.app.AppCompatActivity;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.FileProvider;
+import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import com.ajscape.pixatoon.lib.Filter;
 import com.ajscape.pixatoon.lib.FilterManager;
@@ -19,25 +23,28 @@ import com.pntstudio.buzz.filterapp.fragment.FilterConfigFragment;
 import com.pntstudio.buzz.filterapp.fragment.FilterSelectorFragment;
 import com.pntstudio.buzz.filterapp.fragment.interfaces.FilterConfigListener;
 import com.pntstudio.buzz.filterapp.fragment.interfaces.FilterSelectorListener;
+import com.pntstudio.buzz.filterapp.utils.FileUtils;
 import com.pntstudio.buzz.filterapp.view.PictureSurfaceView;
-
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ImageActivity extends AppCompatActivity implements View.OnClickListener
-        ,FilterSelectorListener,FilterConfigListener{
+        , FilterSelectorListener, FilterConfigListener {
     private static final String TAG = "ImageActivity";
 
     public static String INTENT_DATA = "image_path";
     private PictureSurfaceView mPictureView;
-    private ImageButton mTrashImgBtn;
-    private ImageButton mConfigImgBtn;
-    private ImageButton mFilterImgBtn;
-    private  ImageButton mShareImgBtn;
+    private ImageView mSaveImgBtn;
+    private ImageView mConfigImgBtn;
+    private ImageView mFilterImgBtn;
+    private ImageView mShareImgBtn;
+    private static String mCurrentSaveUri;
 
 
     private Bitmap mScaledInputBitmap, mScaledOutputBitmap;
@@ -49,13 +56,12 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
     private FilterManager mFilterManager;
 
 
-
     private FilterSelectorFragment mFilterSelectorFragment;
     private FilterConfigFragment mFilterConfigFragment;
 
     // Statically Load native OpenCV and image filter implementation libraries
     static {
-        Log.e(TAG,"load library");
+        Log.e(TAG, "load library");
         System.loadLibrary("opencv_java3");
         System.loadLibrary("image_filters");
     }
@@ -65,18 +71,19 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         setContentView(R.layout.activity_image);
-        mPictureView  = findViewById(R.id.image_img);
-        mTrashImgBtn = findViewById(R.id.img_trash);
+        mPictureView = findViewById(R.id.image_img);
+        mSaveImgBtn = findViewById(R.id.img_save);
         mConfigImgBtn = findViewById(R.id.img_config);
         mFilterImgBtn = findViewById(R.id.img_filter);
         mShareImgBtn = findViewById(R.id.img_share);
         mFilterManager = FilterManager.getInstance();
+        mCurrentSaveUri = "";
 
         String imagePath = getIntent().getStringExtra(INTENT_DATA);
 //        Bitmap bmImg = BitmapFactory.decodeFile(imagePath);
 //        mPictureView.setImageBitmap(bmImg);
         loadPicture(imagePath);
-        mTrashImgBtn.setOnClickListener(this);
+        mSaveImgBtn.setOnClickListener(this);
         mConfigImgBtn.setOnClickListener(this);
         mFilterImgBtn.setOnClickListener(this);
         mShareImgBtn.setOnClickListener(this);
@@ -87,16 +94,16 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
                 com.ajscape.pixatoon.R.drawable.sketch_texture);
 
 
-
         mFilterSelectorFragment = new FilterSelectorFragment();
     }
 
     /**
      * Returns true if filter configuration panel is opened, else returns false
+     *
      * @return
      */
     private boolean isFilterConfigVisible() {
-        if(mFilterConfigFragment!=null && mFilterConfigFragment.isVisible())
+        if (mFilterConfigFragment != null && mFilterConfigFragment.isVisible())
             return true;
         else
             return false;
@@ -106,7 +113,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
      * Open filter configuration panel with current filter specific settings
      */
     private void openCurrentFilterConfig() {
-        if (mFilterManager.getCurrentFilter()!=null && !isFilterConfigVisible()) {
+        if (mFilterManager.getCurrentFilter() != null && !isFilterConfigVisible()) {
 
             mFilterConfigFragment = new FilterConfigFragment();
             mFilterConfigFragment.setFilter(mFilterManager.getCurrentFilter());
@@ -124,7 +131,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
      * Open filter selector panel, to choose between different image filters
      */
     private void openFilterSelector() {
-        if(!mFilterSelectorFragment.isVisible()) {
+        if (!mFilterSelectorFragment.isVisible()) {
 //            mSelectFilterBtn.setImageResource(R.drawable.icon_btn_filters_on);
 
             getFragmentManager()
@@ -140,13 +147,13 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onClick(View v) {
         // Detect clicked view, and execute actions accordingly
-        switch(v.getId()) {
-            case R.id.img_trash:
-
+        switch (v.getId()) {
+            case R.id.img_save:
+                mCurrentSaveUri = FileUtils.saveStyleImage(mScaledOutputBitmap, this, mCurrentSaveUri);
                 break;
             case R.id.img_config:
                 closeFilterSelector();
-                if(!isFilterConfigVisible())
+                if (!isFilterConfigVisible())
                     openCurrentFilterConfig();
                 else
                     closeCurrentFilterConfig();
@@ -154,12 +161,14 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
                 break;
             case R.id.img_filter:
                 closeCurrentFilterConfig();
-                if(!mFilterSelectorFragment.isVisible())
+                if (!mFilterSelectorFragment.isVisible())
                     openFilterSelector();
                 else
                     closeFilterSelector();
                 break;
             case R.id.img_share:
+                new ShareTask(this).execute();
+
 
                 break;
 
@@ -167,6 +176,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         }
 
     }
+
     /**
      * Close filter configuration panel
      */
@@ -176,7 +186,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
                     .beginTransaction()
                     .remove(mFilterConfigFragment)
                     .commit();
-            Log.d(TAG,"filter config closed");
+            Log.d(TAG, "filter config closed");
         }
     }
 
@@ -184,7 +194,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
      * Close filter selector panel, if opened
      */
     private void closeFilterSelector() {
-        if(mFilterSelectorFragment.isVisible()) {
+        if (mFilterSelectorFragment.isVisible()) {
             getFragmentManager()
                     .beginTransaction()
                     .remove(mFilterSelectorFragment)
@@ -200,10 +210,9 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
     }
 
 
-
     @Override
     public void onFilterSelect(FilterType filterType) {
-        if(mFilterManager.getCurrentFilter()==null || filterType != mFilterManager.getCurrentFilter().getType()) {
+        if (mFilterManager.getCurrentFilter() == null || filterType != mFilterManager.getCurrentFilter().getType()) {
             mFilterManager.setCurrentFilter(filterType);
             Log.d(TAG, "current filter set to " + filterType.toString());
 //            if (mPictureViewerFragment.isVisible()) {
@@ -215,14 +224,22 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         }
 
     }
-    public void loadPicture(String pictureFilePath) {
-        Log.d(TAG,"load picture from path="+pictureFilePath);
 
-        // Load mat from filepath
+    public void loadPicture(String pictureFilePath) {
+        Log.d(TAG, "load picture from path=" + pictureFilePath);
+
+//        // Load mat from filepath
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
         Bitmap inputBitmap = BitmapFactory.decodeFile(pictureFilePath, options);
+        try {
+            inputBitmap = FileUtils.modifyOrientation(inputBitmap, pictureFilePath);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         // Get dimensions of screen
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -231,24 +248,24 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         int height = displayMetrics.heightPixels;
 
         // If input is landscape, rotate for better screen coverage
-        if(inputBitmap.getWidth()>inputBitmap.getHeight()) {
-            inputBitmap = Utils.rotateBitmap(inputBitmap, 90);
-            mInputRotated = true;
-            mFilterManager.setSketchFlip(true);
-        } else {
-            mInputRotated = false;
-            mFilterManager.setSketchFlip(false);
-        }
+//        if(inputBitmap.getWidth()>inputBitmap.getHeight()) {
+//            inputBitmap = Utils.rotateBitmap(inputBitmap, 90);
+//            mInputRotated = true;
+//            mFilterManager.setSketchFlip(true);
+//        } else {
+//            mInputRotated = false;
+//            mFilterManager.setSketchFlip(false);
+//        }
 
         // Get scaled bitmap and mat fit to screen, for preview filter display
         mScaledInputBitmap = Utils.resizeBitmap(inputBitmap, width, height);
         mScaledOutputBitmap = mScaledInputBitmap.copy(mScaledInputBitmap.getConfig(), true);
 
-        if(mScaledInputMat != null)
+        if (mScaledInputMat != null)
             mScaledInputMat.release();
         mScaledInputMat = new Mat(mScaledInputBitmap.getHeight(), mScaledInputBitmap.getWidth(), CvType.CV_8UC4);
 
-        if(mScaledOutputMat != null)
+        if (mScaledOutputMat != null)
             mScaledOutputMat.release();
         mScaledOutputMat = new Mat(mScaledInputBitmap.getHeight(), mScaledInputBitmap.getWidth(), CvType.CV_8UC4);
         org.opencv.android.Utils.bitmapToMat(mScaledInputBitmap, mScaledInputMat);
@@ -259,7 +276,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
     }
 
     public void updatePicture() {
-        if(mUpdateThread == null || !mUpdateThread.isAlive()) {
+        if (mUpdateThread == null || !mUpdateThread.isAlive()) {
             mPendingUpdate.set(false);
             mUpdateThread = new PictureUpdateThread();
             mUpdateThread.start();
@@ -276,17 +293,16 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
             do {
                 mPendingUpdate.set(false);
                 Filter currentFilter = mFilterManager.getCurrentFilter();
-                if (currentFilter != null) {
-                    if(mFilterManager.getFilterScaleFactor() < 1.0)
+                if (currentFilter != null && currentFilter.getType() != FilterType.COLOR_ORIGIN) {
+                    if (mFilterManager.getFilterScaleFactor() < 1.0)
                         mFilterManager.setFilterScaleFactor(1.0);
                     currentFilter.process(mScaledInputMat, mScaledOutputMat);
                     org.opencv.android.Utils.matToBitmap(mScaledOutputMat, mScaledOutputBitmap);
                 }
                 mPictureView.setImageBitmap(mScaledOutputBitmap);
-            }while(mPendingUpdate.get() == true);
+            } while (mPendingUpdate.get() == true);
         }
     }
-
 
 
     @Override
@@ -300,18 +316,19 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         Log.d(TAG, "Picture fragment view destroyed");
         super.onDestroy();
     }
+
     @Override
     public void onPause() {
         // Terminate picture update thread
-        if(mUpdateThread != null && mUpdateThread.isAlive()) {
+        if (mUpdateThread != null && mUpdateThread.isAlive()) {
             boolean retry;
             do {
                 try {
                     mUpdateThread.join();
                     retry = false;
-                    Log.d(TAG,"Update thread terminated");
+                    Log.d(TAG, "Update thread terminated");
                 } catch (InterruptedException e) {
-                    Log.d(TAG,"Error while terminating update thread...retrying");
+                    Log.d(TAG, "Error while terminating update thread...retrying");
                     retry = true;
                 }
             } while (retry);
@@ -327,5 +344,53 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         mat = new Mat(tempMat.size(), CvType.CV_8UC1);
         Imgproc.cvtColor(tempMat, mat, Imgproc.COLOR_RGBA2GRAY);
         Native.setSketchTexture(mat.getNativeObjAddr());
+    }
+
+
+    private class ShareTask extends AsyncTask<Void, Void, String> {
+
+        private WeakReference<ImageActivity> activityReference;
+
+        // only retain a weak reference to the activity
+        ShareTask(ImageActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+
+            // do save running task...
+            mCurrentSaveUri = FileUtils.saveStyleImage(mScaledOutputBitmap, activityReference.get(), mCurrentSaveUri);
+            return mCurrentSaveUri;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            /* Example of sharing an image */
+            File file = new File(result);
+//            Uri uri = Uri.fromFile(file);
+            Uri uri = FileProvider.getUriForFile(
+                    activityReference.get(),
+                    "com.pntstudio.buzz.filterapp.provider", //(use your app signature + ".provider" )
+                    file);
+
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("image/*");
+
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "Share your sketch");
+            startActivity(shareIntent);
+
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mFilterConfigFragment != null && mFilterConfigFragment.isVisible()) {
+            closeCurrentFilterConfig();
+        } else if (mFilterSelectorFragment != null && mFilterSelectorFragment.isVisible()) {
+            closeFilterSelector();
+        } else
+            super.onBackPressed();
     }
 }

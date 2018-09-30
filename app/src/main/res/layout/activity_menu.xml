@@ -90,7 +90,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_save"
+                android:src="@drawable/ic_save_white"
                 android:layout_marginLeft="@dimen/fab_margin"
                 android:layout_marginTop="@dimen/fab_margin"
                 />

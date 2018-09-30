@@ -3,9 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/libraries/PixaToon-master/app/app-pixatoon.iml" filepath="$PROJECT_DIR$/libraries/PixaToon-master/app/app-pixatoon.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/filter.iml" filepath="$PROJECT_DIR$/.idea/filter.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/filter-filter.iml" filepath="$PROJECT_DIR$/app/filter-filter.iml" />
       <module fileurl="file://$PROJECT_DIR$/libraries/PixaToon-master/libraries/opencv/opencv.iml" filepath="$PROJECT_DIR$/libraries/PixaToon-master/libraries/opencv/opencv.iml" />
+      <module fileurl="file://$PROJECT_DIR$/site-pro-filter.iml" filepath="$PROJECT_DIR$/site-pro-filter.iml" />
     </modules>
   </component>
 </project>

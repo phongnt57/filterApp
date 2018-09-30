@@ -21,7 +21,7 @@ public class FilterManager extends Application {
     private ArrayList<Filter> mFilterList;
     private HashMap<FilterType, Filter> mFilterType2FilterMap;
     private Filter mCurrentFilter;
-    private FilterType mDefaultFilterType = FilterType.COLOR_CARTOON;
+    private FilterType mDefaultFilterType = FilterType.COLOR_ORIGIN;
     private Filter mDefaultFilter;
 
     // Filter processing scaling factor

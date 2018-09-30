@@ -13,6 +13,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.ajscape.pixatoon.lib.Filter;
 import com.ajscape.pixatoon.lib.FilterManager;
@@ -44,6 +45,9 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
     private ImageView mConfigImgBtn;
     private ImageView mFilterImgBtn;
     private ImageView mShareImgBtn;
+    private ImageView mCloseImg;
+    private LinearLayout mTopLL;
+    private LinearLayout mBottomLl;
     private static String mCurrentSaveUri;
 
 
@@ -76,6 +80,21 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         mConfigImgBtn = findViewById(R.id.img_config);
         mFilterImgBtn = findViewById(R.id.img_filter);
         mShareImgBtn = findViewById(R.id.img_share);
+        mCloseImg  = findViewById(R.id.close_img);
+        mTopLL = findViewById(R.id.top_ll);
+        mBottomLl = findViewById(R.id.menuBtnPanel);
+        mPictureView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mTopLL.getVisibility()==View.VISIBLE  && mBottomLl.getVisibility()== View.VISIBLE){
+                    mTopLL.setVisibility(View.INVISIBLE);
+                    mBottomLl.setVisibility(View.INVISIBLE);
+                }else {
+                    mTopLL.setVisibility(View.VISIBLE);
+                    mBottomLl.setVisibility(View.VISIBLE);
+                }
+            }
+        });
         mFilterManager = FilterManager.getInstance();
         mCurrentSaveUri = "";
 
@@ -87,6 +106,7 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
         mConfigImgBtn.setOnClickListener(this);
         mFilterImgBtn.setOnClickListener(this);
         mShareImgBtn.setOnClickListener(this);
+        mCloseImg.setOnClickListener(this);
 
         // Load sketch texture
         // important to use pencil sketch
@@ -168,8 +188,9 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
                 break;
             case R.id.img_share:
                 new ShareTask(this).execute();
-
-
+                break;
+            case R.id.close_img:
+                finish();
                 break;
 
 

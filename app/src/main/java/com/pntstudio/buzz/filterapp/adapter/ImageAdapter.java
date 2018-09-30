@@ -43,7 +43,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
         viewHolder.img.setScaleType(ImageView.ScaleType.CENTER_CROP);
 //        viewHolder.img.setImageResource((galleryList.get(i).getUrl()));
         Picasso.with(context).load(new File(imageModel.getUrl()))
-                .placeholder(R.drawable.slider_001)
+                .placeholder(R.drawable.ic_placeholder)
                 .fit()
                 .centerCrop()
                 .into(viewHolder.img);
@@ -51,6 +51,14 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
             @Override
             public void onClick(View view) {
                 onClickImageModel.onClick(imageModel);
+            }
+        });
+
+        viewHolder.img.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                onClickImageModel.onLongClick(imageModel);
+                return false;
             }
         });
         Log.e("--",galleryList.get(i).getUrl());
@@ -63,6 +71,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder> 
 
     public interface OnClickImageModel{
         void  onClick(ImageModel imageModel);
+        void  onLongClick(ImageModel imageModel);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder{

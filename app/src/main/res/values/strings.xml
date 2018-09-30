@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">FilterApp</string>
+    <string name="app_name">U Sketch</string>
     <string name="request_permission">This app needs camera permission</string>
     <string name="picture">Capture</string>
     <string name="camera_error">Error when create camera!!</string>

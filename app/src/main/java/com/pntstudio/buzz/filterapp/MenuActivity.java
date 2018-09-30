@@ -1,11 +1,17 @@
 package com.pntstudio.buzz.filterapp;
 
+import android.*;
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.RequiresApi;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -52,11 +58,22 @@ public class MenuActivity extends AppCompatActivity implements View.OnClickListe
         mSelectPictureLl = findViewById(R.id.select_picture_ll);
         mCategoryLl = findViewById(R.id.category_ll);
 
-        initAd();
         mCameraImg.setOnClickListener(this);
         mSelectPictureLl.setOnClickListener(this);
         mCategoryLl.setOnClickListener(this);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE}
+                        , 2);
+            }
+
+
+        }
+        initAd();
         initPageIndicator();
+
+
 
 
 
@@ -64,7 +81,7 @@ public class MenuActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initPageIndicator() {
         HashMap<String, Integer> file_maps = new HashMap<String, Integer>();
-        file_maps.put("Oil Paint", R.drawable.slider_001);
+//        file_maps.put("Oil Paint", R.drawable.slider_001);
         file_maps.put("Pencil Sketch", R.drawable.slider_002);
         file_maps.put("Oil Sketch", R.drawable.slider_003);
         file_maps.put("Color Sketch", R.drawable.slider_004);

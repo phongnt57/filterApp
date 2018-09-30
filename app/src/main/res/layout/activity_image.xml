@@ -7,10 +7,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.pntstudio.buzz.filterapp.ImageActivity">
+
     <com.pntstudio.buzz.filterapp.view.PictureSurfaceView
         android:id="@+id/image_img"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+    <LinearLayout
+        android:id="@+id/top_ll"
+        android:background="@color/white"
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
+        <ImageView
+            android:id="@+id/close_img"
+            android:layout_margin="@dimen/margin_medium"
+            android:layout_gravity="center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_cancel"/>
+    </LinearLayout>
     <LinearLayout
         android:id="@+id/filterConfigPanel"
         android:layout_width="match_parent"

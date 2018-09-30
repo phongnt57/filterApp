@@ -26,19 +26,25 @@
 
             <ImageView
                 android:fitsSystemWindows="true"
-
                 android:id="@+id/header_img"
                 android:adjustViewBounds="true"
                 android:scaleType="centerCrop"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/ic_placeholder"/>
+
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
-                />
+                >
+                <ImageView
+                    android:id="@+id/cancel_img"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_cancel_white"/>
+            </android.support.v7.widget.Toolbar>
 
         </android.support.design.widget.CollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
@@ -48,12 +54,20 @@
 
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/img_share"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
         app:layout_anchor="@id/app_bar"
         app:layout_anchorGravity="bottom|end"
-        app:srcCompat="@drawable/ic_edit" />
+        app:srcCompat="@drawable/ic_share_white" />
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/img_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/fab_margin"
+        app:layout_anchor="@id/app_bar"
+        app:layout_anchorGravity="bottom|start"
+        app:srcCompat="@drawable/ic_delete" />
 
 </android.support.design.widget.CoordinatorLayout>

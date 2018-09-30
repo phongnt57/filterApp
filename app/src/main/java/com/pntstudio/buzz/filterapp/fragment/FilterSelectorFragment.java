@@ -61,10 +61,10 @@ public class FilterSelectorFragment extends Fragment implements View.OnClickList
 
     private void initFilterMap() {
         mFilterMap.put(R.id.colorCartoonFilterBtn, FilterType.COLOR_CARTOON);
-        mFilterMap.put(R.id.grayCartoonFilterBtn, FilterType.GRAY_CARTOON);
+//        mFilterMap.put(R.id.grayCartoonFilterBtn, FilterType.GRAY_CARTOON);
         mFilterMap.put(R.id.colorSketchFilterBtn, FilterType.COLOR_SKETCH);
         mFilterMap.put(R.id.pencilSketchFilterBtn, FilterType.PENCIL_SKETCH);
-        mFilterMap.put(R.id.pixelArtFilterBtn, FilterType.PIXEL_ART);
+//        mFilterMap.put(R.id.pixelArtFilterBtn, FilterType.PIXEL_ART);
         mFilterMap.put(R.id.oilPaintFilterBtn, FilterType.OIL_PAINT);
     }
 

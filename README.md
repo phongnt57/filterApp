@@ -1,6 +1,8 @@
 # filterApp
 
-Pre-requisites
+
+
+Pre-requsites
 
 --------------
 
@@ -9,6 +11,7 @@ Pre-requisites
 
 
 Library using
+
 ---------------
  -  openCV
  -  camera 2 api
